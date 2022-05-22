@@ -3,7 +3,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 export function Usereduser() {
   const [inpValue, setInpValue] = useState("");
   const [store, setStore] = useState([]);
-  
+
   const [state, dispatch] = useReducer(reducer, store);
 
   function reducer(state, action) {
@@ -18,24 +18,44 @@ export function Usereduser() {
           )
         );
         setStore(JSON.parse(localStorage.getItem("store")));
+
         return state.filter((item, index) => index !== action.payload);
       case "refresh":
         return store;
+
+      case "check":
+        localStorage.setItem(
+          "store",
+          JSON.stringify(
+            state.map((item) => {
+              if (item.val === action.paylaod.val) {
+                return action.paylaod;
+              } else {
+                return item;
+              }
+            })          )
+        );
+        setStore(JSON.parse(localStorage.getItem("store")));
+        return JSON.parse(localStorage.getItem("store"));
+
+      case "delete completed":
+        localStorage.setItem(
+          "store",
+          JSON.stringify(state.filter((item) => item.iscompleted === false))
+        );
+        setStore(JSON.parse(localStorage.getItem("store")));
+        return JSON.parse(localStorage.getItem("store"))
       default:
         return [];
-      
     }
   }
-
-  // useEffect(() => { 
-
-    
-  // }, [state]);
 
   useEffect(() => {
     setStore(JSON.parse(localStorage.getItem("store")));
     dispatch({ type: "refresh", payload: store });
   }, []);
+
+  console.log("store", store);
 
   return (
     <div>
@@ -44,10 +64,16 @@ export function Usereduser() {
         onSubmit={(e) => {
           e.preventDefault();
 
-          localStorage.setItem("store", JSON.stringify([...store, inpValue]));
-          setStore(JSON.parse(localStorage.getItem("store")));          
-          dispatch({ type: "add", payload: inpValue });
-          
+          localStorage.setItem(
+            "store",
+            JSON.stringify([...store, { iscompleted: false, val: inpValue }])
+          );
+          setStore(JSON.parse(localStorage.getItem("store")));
+          dispatch({
+            type: "add",
+            payload: { iscompleted: false, val: inpValue },
+          });
+
           setInpValue("");
         }}
       >
@@ -64,8 +90,17 @@ export function Usereduser() {
         state.map((item, i) => {
           return (
             <div key={i}>
-              <input type="checkBox" name="" id="" />
-              {item}
+              <input
+                type="checkBox"
+                onChange={() => {
+                  dispatch({
+                    type: "check",
+                    paylaod: { ...item, iscompleted: !item.iscompleted },
+                  });
+                }}
+                checked={item.iscompleted}
+              />
+              {item.val}
               <button
                 onClick={() => {
                   dispatch({ type: "delete", payload: i });
@@ -78,10 +113,10 @@ export function Usereduser() {
         })}
       <button
         onClick={() => {
-          localStorage.setItem("mainStore", JSON.stringify(["a", "b"]));
+          dispatch({ type: "delete completed" });
         }}
       >
-        st
+        delete complited
       </button>
     </div>
   );
