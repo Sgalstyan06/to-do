@@ -27,13 +27,14 @@ export function Usereduser() {
         localStorage.setItem(
           "store",
           JSON.stringify(
-            state.map((item) => {
-              if (item.val === action.paylaod.val) {
-                return action.paylaod;
+            state.map((item, index) => {
+              if (index === action.paylaod[0]) {
+                return action.paylaod[1];
               } else {
                 return item;
               }
-            })          )
+            })
+          )
         );
         setStore(JSON.parse(localStorage.getItem("store")));
         return JSON.parse(localStorage.getItem("store"));
@@ -44,15 +45,20 @@ export function Usereduser() {
           JSON.stringify(state.filter((item) => item.iscompleted === false))
         );
         setStore(JSON.parse(localStorage.getItem("store")));
-        return JSON.parse(localStorage.getItem("store"))
+        return JSON.parse(localStorage.getItem("store"));
       default:
         return [];
     }
   }
 
   useEffect(() => {
-    setStore(JSON.parse(localStorage.getItem("store")));
-    dispatch({ type: "refresh", payload: store });
+    console.log("s", store);
+    if (localStorage.getItem("store") === null) {
+      localStorage.setItem("store", JSON.stringify([]));
+    } else {
+      setStore(JSON.parse(localStorage.getItem("store")));
+      dispatch({ type: "refresh", payload: store });
+    }
   }, []);
 
   console.log("store", store);
@@ -63,16 +69,16 @@ export function Usereduser() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          dispatch({
+            type: "add",
+            payload: { iscompleted: false, val: inpValue },
+          });
 
           localStorage.setItem(
             "store",
             JSON.stringify([...store, { iscompleted: false, val: inpValue }])
           );
           setStore(JSON.parse(localStorage.getItem("store")));
-          dispatch({
-            type: "add",
-            payload: { iscompleted: false, val: inpValue },
-          });
 
           setInpValue("");
         }}
@@ -95,7 +101,7 @@ export function Usereduser() {
                 onChange={() => {
                   dispatch({
                     type: "check",
-                    paylaod: { ...item, iscompleted: !item.iscompleted },
+                    paylaod:[i,{ ...item, iscompleted: !item.iscompleted }],
                   });
                 }}
                 checked={item.iscompleted}
