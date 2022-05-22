@@ -3,6 +3,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 export function Usereduser() {
   const [inpValue, setInpValue] = useState("");
   const [store, setStore] = useState([]);
+  const [hide, setHide] = useState(true);
 
   const [state, dispatch] = useReducer(reducer, store);
 
@@ -39,13 +40,26 @@ export function Usereduser() {
         setStore(JSON.parse(localStorage.getItem("store")));
         return JSON.parse(localStorage.getItem("store"));
 
-      case "delete completed":
-        localStorage.setItem(
-          "store",
-          JSON.stringify(state.filter((item) => item.iscompleted === false))
-        );
-        setStore(JSON.parse(localStorage.getItem("store")));
-        return JSON.parse(localStorage.getItem("store"));
+      case "hide completed":
+        
+          localStorage.setItem(
+            "hideCheck",
+            JSON.stringify(state.filter((item) => item.iscompleted === false))
+          );
+          if( hide ){
+            setHide(prev => !prev);
+            return JSON.parse(localStorage.getItem("hideCheck"));
+            
+          }else{
+            setHide(prev => !prev)
+            return store;
+          } 
+          
+        
+        
+
+      // setStore(JSON.parse(localStorage.getItem("store")));
+
       default:
         return [];
     }
@@ -101,7 +115,7 @@ export function Usereduser() {
                 onChange={() => {
                   dispatch({
                     type: "check",
-                    paylaod:[i,{ ...item, iscompleted: !item.iscompleted }],
+                    paylaod: [i, { ...item, iscompleted: !item.iscompleted }],
                   });
                 }}
                 checked={item.iscompleted}
@@ -119,10 +133,10 @@ export function Usereduser() {
         })}
       <button
         onClick={() => {
-          dispatch({ type: "delete completed" });
+          dispatch({ type: "hide completed" });
         }}
       >
-        delete complited
+        hide complited
       </button>
     </div>
   );
